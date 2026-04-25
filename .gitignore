@@ -1,0 +1,29 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# PyInstaller
+build/
+dist/
+*.spec
+*.exe
+
+# Logs
+logs/
+*.log
+
+# Local Excel lock/temp files
+~$*.xlsx
+
+# OS / IDE
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
