@@ -19,20 +19,34 @@ Current baseline release: **3.5**.
 
 ```text
 label/
-  menu_print_v3.1_en.bat
-  menu_print_v3.1.ini
-  build_exe_v3.1_download.bat
-  print_datamatrix_zpl_graphics_from_excel_v3.1.py
+  menu_print_v3.5.bat
+  menu_print_v3.5.ini
+  build_exe_v3.5.bat
+  print_datamatrix_zpl_graphics_from_excel_v3.5.py
   data.xlsx
   eac.png
   fonts/
     arial.ttf
   dist/
-    print_datamatrix_zpl_graphics_from_excel_v3.1.exe
+    print_datamatrix_zpl_graphics_from_excel_v3.5.exe
   logs/
+  legacy/
+    v3.1/
+      README.md
 ```
 
 All runtime paths in the menu are relative to the folder containing the BAT file.
+
+## Active release files
+
+- `print_datamatrix_zpl_graphics_from_excel_v3.5.py`
+- `build_exe_v3.5.bat`
+- `menu_print_v3.5.bat`
+- `menu_print_v3.5.ini`
+
+## Legacy
+
+Old release 3.1 files were removed from the active project root to avoid confusion. See `legacy/v3.1/README.md`.
 
 ## Release notes
 
