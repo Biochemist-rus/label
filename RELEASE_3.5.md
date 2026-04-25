@@ -6,7 +6,7 @@ This release is the new baseline for the label-printing tool.
 
 - Bilingual BAT menu: English and Russian.
 - Startup language selection.
-- Language value is saved in `menu_print_v3.1.ini`.
+- Language value is saved in `menu_print_v3.5.ini`.
 - Printer-specific label layout parameters moved from BAT into INI.
 - INI contains profiles for:
   - Printer 1 / 60x30 mm labels;
@@ -17,6 +17,7 @@ This release is the new baseline for the label-printing tool.
 - Fonts are expected in `fonts\`.
 - Build script uses relative PyInstaller `--add-data` paths.
 - Menu writes command output to `logs\`.
+- Release 3.1 files were moved out of the active root and marked as legacy.
 
 ## Kept behavior from 3.1
 
@@ -28,18 +29,28 @@ This release is the new baseline for the label-printing tool.
 
 ```text
 label/
-  menu_print_v3.1_en.bat
-  menu_print_v3.1.ini
-  build_exe_v3.1_download.bat
-  print_datamatrix_zpl_graphics_from_excel_v3.1.py
+  menu_print_v3.5.bat
+  menu_print_v3.5.ini
+  build_exe_v3.5.bat
+  print_datamatrix_zpl_graphics_from_excel_v3.5.py
   data.xlsx
   eac.png
   fonts/
     arial.ttf
   dist/
-    print_datamatrix_zpl_graphics_from_excel_v3.1.exe
+    print_datamatrix_zpl_graphics_from_excel_v3.5.exe
   logs/
+  legacy/
+    v3.1/
+      README.md
 ```
+
+## Active release files
+
+- `print_datamatrix_zpl_graphics_from_excel_v3.5.py`
+- `build_exe_v3.5.bat`
+- `menu_print_v3.5.bat`
+- `menu_print_v3.5.ini`
 
 ## Release rule going forward
 
