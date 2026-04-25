@@ -1,0 +1,57 @@
+name: Package Ready-to-Use ZIP
+
+on:
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  package:
+    name: Check, build and package ready-to-use ZIP
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
+      - name: Install dependencies
+        run: python -m pip install --upgrade pip pyinstaller pillow openpyxl
+
+      - name: Check Python syntax
+        run: python -m py_compile print_datamatrix_zpl_graphics_from_excel_v3.5.py
+
+      - name: Check CLI help
+        run: python print_datamatrix_zpl_graphics_from_excel_v3.5.py --help
+
+      - name: Build Windows EXE
+        run: python -m PyInstaller --noconfirm --clean --onefile --name print_datamatrix_zpl_graphics_from_excel_v3.5 --add-data "eac.png;." --add-data "fonts;fonts" print_datamatrix_zpl_graphics_from_excel_v3.5.py
+
+      - name: Prepare ready-to-use folder
+        shell: powershell
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $root = 'label-tool-v3.5'
+          if (Test-Path $root) { Remove-Item $root -Recurse -Force }
+          New-Item -ItemType Directory -Force -Path $root | Out-Null
+          New-Item -ItemType Directory -Force -Path "$root\dist" | Out-Null
+          New-Item -ItemType Directory -Force -Path "$root\fonts" | Out-Null
+          Copy-Item 'menu_print_v3.5.bat' "$root\"
+          Copy-Item 'menu_print_v3.5.ini' "$root\"
+          Copy-Item 'data.xlsx' "$root\"
+          Copy-Item 'eac.png' "$root\"
+          Copy-Item 'fonts\*' "$root\fonts\" -Recurse
+          Copy-Item 'dist\print_datamatrix_zpl_graphics_from_excel_v3.5.exe' "$root\dist\"
+          Compress-Archive -Path $root -DestinationPath 'label-tool-v3.5-ready-to-use.zip' -Force
+
+      - name: Upload ready-to-use ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: label-tool-v3.5-ready-to-use
+          path: label-tool-v3.5-ready-to-use.zip
+          if-no-files-found: error
