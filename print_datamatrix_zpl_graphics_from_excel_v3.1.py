@@ -10,11 +10,6 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 def resource_path(relative_path: str) -> Path:
-    """
-    Путь к ресурсу:
-    - при обычном запуске .py
-    - при запуске из PyInstaller .exe
-    """
     if hasattr(sys, "_MEIPASS"):
         return Path(sys._MEIPASS) / relative_path
     return Path(__file__).resolve().parent / relative_path
@@ -23,27 +18,33 @@ def resource_path(relative_path: str) -> Path:
 def get_worksheet(excel_file: str, sheet_name: Union[int, str]):
     path = Path(excel_file)
     if not path.exists():
-        raise FileNotFoundError(f"Excel-файл не найден: {excel_file}")
+        raise FileNotFoundError(f"Excel file not found: {excel_file}")
 
     wb = load_workbook(filename=excel_file, data_only=True)
 
     if isinstance(sheet_name, int):
         sheet_names = wb.sheetnames
         if sheet_name < 0 or sheet_name >= len(sheet_names):
-            raise IndexError(f"sheet index {sheet_name} вне диапазона. Листы: {sheet_names}")
+            raise IndexError(f"sheet index {sheet_name} is out of range. Sheets: {sheet_names}")
         ws = wb[sheet_names[sheet_name]]
     else:
         if sheet_name not in wb.sheetnames:
-            raise KeyError(f"Лист '{sheet_name}' не найден. Доступные листы: {wb.sheetnames}")
+            raise KeyError(f"Sheet '{sheet_name}' not found. Available sheets: {wb.sheetnames}")
         ws = wb[sheet_name]
 
     return ws
 
 
+def is_blank_separator(value) -> bool:
+    if value is None:
+        return True
+    return str(value).strip() == ""
+
+
 def find_column_index_by_header(ws, column_name: str) -> int:
     headers = [cell.value for cell in ws[1]]
     if column_name not in headers:
-        raise KeyError(f"Колонка '{column_name}' не найдена. Доступные заголовки: {headers}")
+        raise KeyError(f"Column '{column_name}' not found. Available headers: {headers}")
     return headers.index(column_name) + 1
 
 
@@ -60,11 +61,11 @@ def normalize_text(value) -> str:
 
 def build_payload(cell_value) -> bytes:
     if cell_value is None:
-        raise ValueError("Ячейка Data Matrix пустая (None)")
+        raise ValueError("Data Matrix cell is empty (None)")
 
     text = str(cell_value)
     if text == "":
-        raise ValueError("Ячейка Data Matrix пустая (empty string)")
+        raise ValueError("Data Matrix cell is empty (empty string)")
 
     text = text.replace("_x001D_", "\x1d")
     text = text.replace("_x001d_", "\x1d")
@@ -73,18 +74,14 @@ def build_payload(cell_value) -> bytes:
         payload = text.encode("latin-1")
     except UnicodeEncodeError as e:
         raise ValueError(
-            "В значении Data Matrix есть символы вне latin-1. "
-            "Их нужно отдельно нормализовать."
+            "Data Matrix value contains characters outside latin-1. "
+            "Please normalize the source data."
         ) from e
 
     return payload
 
 
 def extract_ai_21(payload: bytes, max_len: int = 13) -> str:
-    """
-    Вытаскивает AI (21) из Data Matrix строки.
-    Ищет 21, затем берёт данные до GS или конца строки.
-    """
     try:
         text = payload.decode("latin-1")
     except Exception:
@@ -170,15 +167,11 @@ def wrap_text_by_pixels(
 def load_font(font_path: str, font_size: int) -> ImageFont.FreeTypeFont:
     path = Path(font_path)
     if not path.exists():
-        raise FileNotFoundError(f"Файл шрифта не найден: {font_path}")
+        raise FileNotFoundError(f"Font file not found: {font_path}")
     return ImageFont.truetype(str(path), font_size)
 
 
 def load_and_prepare_logo(logo_path: str, logo_height_px: int) -> Image.Image:
-    """
-    Сначала пытается взять внешний файл.
-    Если файла нет — ищет его как ресурс PyInstaller.
-    """
     external = Path(logo_path)
     if external.exists():
         path = external
@@ -186,13 +179,12 @@ def load_and_prepare_logo(logo_path: str, logo_height_px: int) -> Image.Image:
         path = resource_path(logo_path)
 
     if not path.exists():
-        raise FileNotFoundError(f"Файл логотипа не найден: {path}")
+        raise FileNotFoundError(f"EAC logo file not found: {path}")
 
     logo = Image.open(path).convert("RGBA")
-
     w, h = logo.size
     if h <= 0:
-        raise ValueError("Некорректный размер логотипа")
+        raise ValueError("Invalid EAC logo size")
 
     scale = logo_height_px / h
     new_w = max(1, int(round(w * scale)))
@@ -233,31 +225,13 @@ def build_text_lines(
     ai21_lines: List[str] = []
 
     if gtin_text:
-        gtin_lines = wrap_text_by_pixels(
-            gtin_text,
-            font=gtin_font,
-            max_width_px=max(40, text_width_px - 12),
-            max_lines=1,
-            draw=draw,
-        )
+        gtin_lines = wrap_text_by_pixels(gtin_text, gtin_font, max(40, text_width_px - 12), 1, draw)
 
     if name_text:
-        name_lines = wrap_text_by_pixels(
-            name_text,
-            font=name_font,
-            max_width_px=max(40, text_width_px - 12),
-            max_lines=name_max_lines,
-            draw=draw,
-        )
+        name_lines = wrap_text_by_pixels(name_text, name_font, max(40, text_width_px - 12), name_max_lines, draw)
 
     if ai21_text:
-        ai21_lines = wrap_text_by_pixels(
-            ai21_text,
-            font=ai21_font,
-            max_width_px=max(40, text_width_px - 12),
-            max_lines=1,
-            draw=draw,
-        )
+        ai21_lines = wrap_text_by_pixels(ai21_text, ai21_font, max(40, text_width_px - 12), 1, draw)
 
     return gtin_lines, name_lines, ai21_lines
 
@@ -282,15 +256,12 @@ def render_text_block_to_image(
     draw = ImageDraw.Draw(tmp)
 
     items = []
-
     for line in gtin_lines:
         bbox = draw.textbbox((0, 0), line, font=gtin_font)
         items.append((line, gtin_font, bbox[3] - bbox[1]))
-
     for line in name_lines:
         bbox = draw.textbbox((0, 0), line, font=name_font)
         items.append((line, name_font, bbox[3] - bbox[1]))
-
     for line in ai21_lines:
         bbox = draw.textbbox((0, 0), line, font=ai21_font)
         items.append((line, ai21_font, bbox[3] - bbox[1]))
@@ -309,8 +280,7 @@ def render_text_block_to_image(
         draw.text((padding, y), line, font=font, fill=0)
         y += h + line_gap
 
-    bw = img.point(lambda p: 0 if p < 200 else 255, mode="1")
-    return bw
+    return img.point(lambda p: 0 if p < 200 else 255, mode="1")
 
 
 def image_to_zpl_gfa(img: Image.Image) -> bytes:
@@ -333,7 +303,6 @@ def image_to_zpl_gfa(img: Image.Image) -> bytes:
             bit = 1 if pixels[x, y] == 0 else 0
             current_byte = (current_byte << 1) | bit
             bit_count += 1
-
             if bit_count == 8:
                 row_bytes.append(current_byte)
                 current_byte = 0
@@ -350,21 +319,6 @@ def image_to_zpl_gfa(img: Image.Image) -> bytes:
     return gfa.encode("ascii")
 
 
-def estimate_datamatrix_size(module_size: int, payload_len: int) -> int:
-    """
-    Приближённая оценка размера Data Matrix в dots.
-    Для авторазметки хватает.
-    """
-    if payload_len < 25:
-        modules = 16
-    elif payload_len < 50:
-        modules = 20
-    else:
-        modules = 24
-
-    return modules * module_size
-
-
 def build_zpl(
     payload: bytes,
     text_img: Image.Image,
@@ -379,28 +333,26 @@ def build_zpl(
     eac_offset_y: int,
 ) -> bytes:
     if orientation not in {"N", "R", "I", "B"}:
-        raise ValueError("orientation должен быть N/R/I/B")
+        raise ValueError("orientation must be N/R/I/B")
 
     text_gfa = image_to_zpl_gfa(text_img)
     eac_gfa = image_to_zpl_gfa(eac_img)
 
-    zpl = (
+    return (
         b"^XA\r\n"
         + f"^FO{x},{y}\r\n".encode("ascii")
         + f"^BX{orientation},{module_size},{quality}\r\n".encode("ascii")
-        + b"^FD"
-        + payload
-        + b"^FS\r\n"
+        + b"^FD" + payload + b"^FS\r\n"
         + f"^FO{x + eac_offset_x},{y + eac_offset_y}\r\n".encode("ascii")
-        + eac_gfa
-        + b"\r\n^FS\r\n"
+        + eac_gfa + b"\r\n^FS\r\n"
         + f"^FO{x},{y + text_offset_y}\r\n".encode("ascii")
-        + text_gfa
-        + b"\r\n^FS\r\n"
+        + text_gfa + b"\r\n^FS\r\n"
         + b"^XZ\r\n"
     )
 
-    return zpl
+
+def build_blank_feed_command() -> bytes:
+    return b"~PH"
 
 
 def send_to_tcp(ip: str, port: int, data: bytes) -> None:
@@ -412,12 +364,6 @@ def save_debug_file(filepath: str, data: bytes) -> None:
     path = Path(filepath)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_bytes(data)
-
-
-def save_debug_image(filepath: str, img: Image.Image) -> None:
-    path = Path(filepath)
-    path.parent.mkdir(parents=True, exist_ok=True)
-    img.save(path)
 
 
 def print_debug_info(
@@ -438,32 +384,26 @@ def print_debug_info(
     print("[DEBUG] repr(barcode_value):")
     print(repr(barcode_value))
     print()
-
     print("[DEBUG] payload length:", len(payload))
     print("[DEBUG] payload hex:")
     print(payload.hex())
     print()
-
     print("[DEBUG] GS count:", payload.count(b"\x1d"))
     print("[DEBUG] payload visualized:")
     print(payload.replace(b"\x1d", b"<GS>"))
     print()
-
     print("[DEBUG] GTIN lines:")
     for i, line in enumerate(gtin_lines, start=1):
         print(f"  [{i}] {line}")
     print()
-
     print("[DEBUG] NAME lines:")
     for i, line in enumerate(name_lines, start=1):
         print(f"  [{i}] {line}")
     print()
-
     print("[DEBUG] AI21 lines:")
     for i, line in enumerate(ai21_lines, start=1):
         print(f"  [{i}] {line}")
     print()
-
     print("[DEBUG] text image size:", text_img.size)
     print("[DEBUG] eac image size:", eac_img.size)
     print("[DEBUG] eac offset:", eac_offset_x, eac_offset_y)
@@ -482,65 +422,60 @@ def parse_sheet_arg(value: str) -> Union[int, str]:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(
-        description="Печать Data Matrix + текста картинкой + EAC + AI(21) через ZPL"
-    )
-
-    parser.add_argument("--excel", required=True, help="Путь к Excel-файлу .xlsx")
-    parser.add_argument("--sheet", default="0", help="Лист: индекс или имя")
-
-    parser.add_argument("--column", required=True, help="Колонка с Data Matrix")
-    parser.add_argument("--gtin-column", required=True, help="Колонка с GTIN")
-    parser.add_argument("--name-column", required=True, help="Колонка с названием/артикулом")
-
-    parser.add_argument("--row", type=int, default=0, help="0 = первая строка после заголовка")
-    parser.add_argument("--all", action="store_true", help="Печатать все непустые строки")
-
-    parser.add_argument("--ip", required=True, help="IP принтера")
-    parser.add_argument("--port", type=int, default=9100, help="TCP-порт")
-
-    parser.add_argument("--x", type=int, default=100, help="X кода")
-    parser.add_argument("--y", type=int, default=40, help="Y кода")
-    parser.add_argument("--module-size", type=int, default=4, help="Размер модуля Data Matrix")
-    parser.add_argument("--quality", type=int, default=200, help="Параметр ^BX")
+    parser = argparse.ArgumentParser(description="Print Data Matrix + text image + EAC + AI(21) via ZPL")
+    parser.add_argument("--excel", required=True, help="Path to Excel file (.xlsx)")
+    parser.add_argument("--sheet", default="0", help="Sheet index or name")
+    parser.add_argument("--column", required=True, help="Column with Data Matrix")
+    parser.add_argument("--gtin-column", required=True, help="Column with GTIN")
+    parser.add_argument("--name-column", required=True, help="Column with item name/article")
+    parser.add_argument("--row", type=int, default=0, help="0 = first data row after header")
+    parser.add_argument("--all", action="store_true", help="Print all rows including blank separators")
+    parser.add_argument("--ip", required=True, help="Printer IP")
+    parser.add_argument("--port", type=int, default=9100, help="Printer TCP port")
+    parser.add_argument("--x", type=int, default=100, help="Data Matrix X")
+    parser.add_argument("--y", type=int, default=40, help="Data Matrix Y")
+    parser.add_argument("--module-size", type=int, default=4, help="Data Matrix module size")
+    parser.add_argument("--quality", type=int, default=200, help="^BX quality")
     parser.add_argument("--orientation", default="N", help="N/R/I/B")
-
-    parser.add_argument(
-        "--text-offset-y",
-        type=int,
-        default=-1,
-        help="Отступ текста вниз от кода. -1 = авто",
-    )
-    parser.add_argument("--text-width-px", type=int, default=500, help="Ширина текстового блока в пикселях")
-    parser.add_argument("--text-padding", type=int, default=4, help="Внутренний отступ в текстовой картинке")
-    parser.add_argument("--gtin-font-size", type=int, default=24, help="Размер шрифта GTIN")
-    parser.add_argument("--name-font-size", type=int, default=32, help="Размер шрифта названия")
-    parser.add_argument("--ai21-font-size", type=int, default=22, help="Размер шрифта строки (21)")
-    parser.add_argument("--line-gap", type=int, default=3, help="Межстрочный интервал")
-    parser.add_argument("--name-max-lines", type=int, default=2, help="Максимум строк для названия")
-
-    parser.add_argument(
-        "--font-path",
-        default=r"C:\Windows\Fonts\arial.ttf",
-        help="Путь к TTF-шрифту с кириллицей",
-    )
-
-    parser.add_argument(
-        "--eac-logo-path",
-        default="eac.png",
-        help="Путь к файлу логотипа EAC",
-    )
-    parser.add_argument("--eac-height-px", type=int, default=72, help="Высота логотипа EAC в пикселях")
-    parser.add_argument("--eac-gap-px", type=int, default=16, help="Отступ между кодом и EAC")
-    parser.add_argument("--eac-offset-x", type=int, default=-1, help="Смещение EAC вправо от кода. -1 = авто")
-    parser.add_argument("--eac-offset-y", type=int, default=0, help="Смещение EAC по Y относительно кода")
-
-    parser.add_argument("--save-zpl", help="Сохранить ZPL в файл")
-    parser.add_argument("--save-text-image", help="Сохранить текстовую картинку в PNG")
-    parser.add_argument("--save-eac-image", help="Сохранить картинку EAC в PNG")
-    parser.add_argument("--no-send", action="store_true", help="Только отладка, не печатать")
-
+    parser.add_argument("--text-offset-y", type=int, default=0, help="Text vertical offset below Data Matrix")
+    parser.add_argument("--text-width-px", type=int, default=500, help="Text block width in pixels")
+    parser.add_argument("--text-padding", type=int, default=4, help="Text image padding")
+    parser.add_argument("--gtin-font-size", type=int, default=24, help="GTIN font size")
+    parser.add_argument("--name-font-size", type=int, default=32, help="Name font size")
+    parser.add_argument("--ai21-font-size", type=int, default=22, help="AI(21) font size")
+    parser.add_argument("--line-gap", type=int, default=3, help="Line gap")
+    parser.add_argument("--name-max-lines", type=int, default=2, help="Max lines for item name")
+    parser.add_argument("--font-path", default=r"C:\Windows\Fonts\arial.ttf", help="Path to TTF font")
+    parser.add_argument("--eac-logo-path", default="eac.png", help="Path to EAC logo file")
+    parser.add_argument("--eac-height-px", type=int, default=72, help="EAC logo height in pixels")
+    parser.add_argument("--eac-gap-px", type=int, default=16, help="Gap between code and EAC")
+    parser.add_argument("--eac-offset-x", type=int, default=0, help="EAC X offset")
+    parser.add_argument("--eac-offset-y", type=int, default=0, help="EAC Y offset")
+    parser.add_argument("--save-zpl", help="Save final ZPL to file")
+    parser.add_argument("--no-send", action="store_true", help="Do not send to printer, debug only")
     return parser
+
+
+def process_blank_row(excel_row: int, args) -> None:
+    cmd = build_blank_feed_command()
+    print(f"[INFO] Excel row {excel_row}: blank separator row detected")
+    print("[INFO] Sending one blank label feed via ~PH")
+
+    if args.save_zpl:
+        base = Path(args.save_zpl)
+        out = base.with_name(f"{base.stem}_row_{excel_row}{base.suffix or '.zpl'}") if args.all else base
+        save_debug_file(str(out), cmd)
+        print(f"[INFO] Blank-feed command saved: {out}")
+
+    if args.no_send:
+        print("[INFO] Send disabled by --no-send")
+        print()
+        return
+
+    print(f"[INFO] Sending blank label feed to {args.ip}:{args.port}")
+    send_to_tcp(args.ip, args.port, cmd)
+    print("[OK] Blank label feed sent")
+    print()
 
 
 def process_excel_row(ws, excel_row: int, args) -> None:
@@ -578,13 +513,6 @@ def process_excel_row(ws, excel_row: int, args) -> None:
 
     eac_img = load_and_prepare_logo(args.eac_logo_path, args.eac_height_px)
 
-    dm_est = estimate_datamatrix_size(args.module_size, len(payload))
-    auto_eac_offset_x = dm_est + args.eac_gap_px
-    eac_offset_x = auto_eac_offset_x if args.eac_offset_x < 0 else args.eac_offset_x
-
-    auto_text_offset_y = max(dm_est, eac_img.size[1]) + 14
-    text_offset_y = auto_text_offset_y if args.text_offset_y < 0 else args.text_offset_y
-
     zpl = build_zpl(
         payload=payload,
         text_img=text_img,
@@ -594,8 +522,8 @@ def process_excel_row(ws, excel_row: int, args) -> None:
         module_size=args.module_size,
         quality=args.quality,
         orientation=args.orientation,
-        text_offset_y=text_offset_y,
-        eac_offset_x=eac_offset_x,
+        text_offset_y=args.text_offset_y,
+        eac_offset_x=args.eac_offset_x,
         eac_offset_y=args.eac_offset_y,
     )
 
@@ -609,37 +537,18 @@ def process_excel_row(ws, excel_row: int, args) -> None:
         zpl=zpl,
         text_img=text_img,
         eac_img=eac_img,
-        eac_offset_x=eac_offset_x,
+        eac_offset_x=args.eac_offset_x,
         eac_offset_y=args.eac_offset_y,
-        text_offset_y=text_offset_y,
+        text_offset_y=args.text_offset_y,
     )
 
-    if args.save_text_image:
-        base = Path(args.save_text_image)
-        out = base.with_name(f"{base.stem}_row_{excel_row}{base.suffix or '.png'}") if args.all else base
-        save_debug_image(str(out), text_img)
-        print(f"[INFO] Текстовая картинка сохранена: {out}")
-
-    if args.save_eac_image:
-        base = Path(args.save_eac_image)
-        out = base.with_name(f"{base.stem}_row_{excel_row}{base.suffix or '.png'}") if args.all else base
-        save_debug_image(str(out), eac_img)
-        print(f"[INFO] EAC картинка сохранена: {out}")
-
-    if args.save_zpl:
-        base = Path(args.save_zpl)
-        out = base.with_name(f"{base.stem}_row_{excel_row}{base.suffix or '.zpl'}") if args.all else base
-        save_debug_file(str(out), zpl)
-        print(f"[INFO] ZPL сохранён: {out}")
-
     if args.no_send:
-        print("[INFO] Отправка отключена флагом --no-send")
+        print("[INFO] Send disabled by --no-send")
         print()
         return
 
-    print(f"[INFO] Отправка по TCP: {args.ip}:{args.port}")
     send_to_tcp(args.ip, args.port, zpl)
-    print("[OK] Команда отправлена на принтер")
+    print("[OK] Label sent")
     print()
 
 
@@ -654,35 +563,39 @@ def main() -> int:
         if args.all:
             barcode_col_idx = find_column_index_by_header(ws, args.column)
 
-            printed = 0
+            processed = 0
             empty_streak = 0
             excel_row = 2
 
             while True:
                 cell_value = ws.cell(row=excel_row, column=barcode_col_idx).value
 
-                if cell_value is None:
+                if is_blank_separator(cell_value):
                     empty_streak += 1
                     if empty_streak >= 50:
                         break
+
+                    process_blank_row(excel_row, args)
+                    processed += 1
                     excel_row += 1
                     continue
 
                 empty_streak = 0
-
-                if str(cell_value).strip() == "":
-                    excel_row += 1
-                    continue
-
                 process_excel_row(ws, excel_row, args)
-                printed += 1
+                processed += 1
                 excel_row += 1
 
-            print(f"[OK] Обработано строк: {printed}")
+            print(f"[OK] Processed rows/feeds: {processed}")
             return 0
 
         excel_row = args.row + 2
-        process_excel_row(ws, excel_row, args)
+        barcode_value = get_cell_value_by_header(ws, excel_row, args.column)
+
+        if is_blank_separator(barcode_value):
+            process_blank_row(excel_row, args)
+        else:
+            process_excel_row(ws, excel_row, args)
+
         return 0
 
     except Exception as e:
