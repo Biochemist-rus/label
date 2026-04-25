@@ -2,6 +2,11 @@ name: Package Ready-to-Use ZIP
 
 on:
   workflow_dispatch:
+    inputs:
+      release_version:
+        description: 'Release version without leading v, for example: 3.5'
+        required: true
+        default: '3.5'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
