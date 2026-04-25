@@ -2,26 +2,29 @@
 chcp 65001 >nul
 setlocal EnableDelayedExpansion
 
-cd /d C:\labels
+REM Work from the folder where this BAT file is located.
+REM Работаем из папки, где лежит этот BAT-файл.
+cd /d "%~dp0"
+set "ROOT=%CD%"
 
-set "EXE=C:\labels\dist\print_datamatrix_zpl_graphics_from_excel_v3.1.exe"
-set "INI=C:\labels\menu_print_v3.1.ini"
-set "LOGDIR=C:\labels\logs"
+set "EXE=dist\print_datamatrix_zpl_graphics_from_excel_v3.1.exe"
+set "INI=menu_print_v3.1.ini"
+set "LOGDIR=logs"
 
 if not exist "%LOGDIR%" mkdir "%LOGDIR%"
 
-REM === Default fallback values ===
+REM === Default fallback values / Значения по умолчанию ===
 set "LANG=EN"
-set "PRINTER1=192.168.14.105"
-set "PRINTER2=172.16.102.80"
-set "EXCEL=C:\labels\data.xlsx"
+set "EXCEL=data.xlsx"
 set "COLUMN=barcode"
 set "GTIN_COLUMN=gtin"
 set "NAME_COLUMN=name"
+set "PRINTER1=192.168.14.105"
+set "PRINTER2=172.16.102.80"
 set "IP=192.168.14.105"
 set "LAST_ROW=0"
 
-REM Printer 1 fallback profile: 60x30 mm labels
+REM Printer 1 fallback profile: 60x30 mm labels / Профиль принтера 1: 60х30 мм
 set "P1_LABEL=60x30"
 set "P1_X=15"
 set "P1_Y=20"
@@ -33,14 +36,14 @@ set "P1_NAME_FONT_SIZE=24"
 set "P1_AI21_FONT_SIZE=20"
 set "P1_LINE_GAP=4"
 set "P1_NAME_MAX_LINES=2"
-set "P1_FONT_PATH=C:\Windows\Fonts\arial.ttf"
+set "P1_FONT_PATH=fonts\arial.ttf"
 set "P1_EAC_LOGO_PATH=eac.png"
 set "P1_EAC_HEIGHT_PX=64"
 set "P1_EAC_GAP_PX=16"
 set "P1_EAC_OFFSET_X=-1"
 set "P1_EAC_OFFSET_Y=0"
 
-REM Printer 2 fallback profile: 60x40 mm labels
+REM Printer 2 fallback profile: 60x40 mm labels / Профиль принтера 2: 60х40 мм
 set "P2_LABEL=60x40"
 set "P2_X=80"
 set "P2_Y=40"
@@ -52,41 +55,42 @@ set "P2_NAME_FONT_SIZE=26"
 set "P2_AI21_FONT_SIZE=22"
 set "P2_LINE_GAP=5"
 set "P2_NAME_MAX_LINES=2"
-set "P2_FONT_PATH=C:\Windows\Fonts\arial.ttf"
+set "P2_FONT_PATH=fonts\arial.ttf"
 set "P2_EAC_LOGO_PATH=eac.png"
 set "P2_EAC_HEIGHT_PX=64"
 set "P2_EAC_GAP_PX=16"
 set "P2_EAC_OFFSET_X=130"
 set "P2_EAC_OFFSET_Y=0"
 
+if not exist "%INI%" call :save_ini
+call :load_ini
+
 if not exist "%EXE%" (
-    echo [ERROR] EXE not found: %EXE%
-    echo [ОШИБКА] EXE не найден: %EXE%
+    echo [ERROR] EXE not found: %ROOT%\%EXE%
+    echo [ОШИБКА] EXE не найден: %ROOT%\%EXE%
+    pause
     exit /b 1
 )
 
-if not exist "%INI%" call :save_ini
-call :load_ini
 call :choose_language
 
 :menu
-for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set TS=%%i
+for /f %%i in ('powershell -NoProfile -Command "Get-Date -Format yyyyMMdd_HHmmss"') do set "TS=%%i"
 set "LOGFILE=%LOGDIR%\print_%TS%.log"
 
+cls
 if /I "%LANG%"=="RU" goto menu_ru
-goto menu_en
 
 :menu_en
-cls
 echo ==========================================
 echo         LABEL PRINTING TOOL v3.1
 echo ==========================================
+echo Root:  %ROOT%
 echo EXE:   %EXE%
 echo INI:   %INI%
 echo Log:   %LOGFILE%
 echo.
-echo Current printer:
-echo   %IP%
+echo Current printer: %IP%
 echo.
 echo Printers:
 echo   1 - %PRINTER1% [%P1_LABEL%]
@@ -109,24 +113,23 @@ echo   9 - Change Excel
 echo   A - Change columns
 echo   P - Change printer IPs
 echo   L - Change language
-echo   S - Save
-echo   R - Reload
+echo   S - Save INI
+echo   R - Reload INI
 echo   0 - Exit
 echo.
-set /p CHOICE=Select option: 
+set /p "CHOICE=Select option: "
 goto handle_choice
 
 :menu_ru
-cls
 echo ==========================================
 echo      ПЕЧАТЬ ЭТИКЕТОК v3.1
 echo ==========================================
-echo EXE:   %EXE%
-echo INI:   %INI%
-echo Log:   %LOGFILE%
+echo Корень: %ROOT%
+echo EXE:    %EXE%
+echo INI:    %INI%
+echo Лог:    %LOGFILE%
 echo.
-echo Текущий принтер:
-echo   %IP%
+echo Текущий принтер: %IP%
 echo.
 echo Принтеры:
 echo   1 - %PRINTER1% [%P1_LABEL%]
@@ -149,11 +152,11 @@ echo   9 - Изменить Excel-файл
 echo   A - Изменить имена колонок
 echo   P - Изменить IP принтеров
 echo   L - Сменить язык
-echo   S - Сохранить
+echo   S - Сохранить INI
 echo   R - Перезагрузить INI
 echo   0 - Выход
 echo.
-set /p CHOICE=Выберите пункт: 
+set /p "CHOICE=Выберите пункт: "
 goto handle_choice
 
 :handle_choice
@@ -172,7 +175,6 @@ if /I "%CHOICE%"=="L" goto langmenu
 if /I "%CHOICE%"=="S" (call :save_ini & call :msg_saved & pause & goto menu)
 if /I "%CHOICE%"=="R" (call :load_ini & call :msg_reloaded & pause & goto menu)
 if /I "%CHOICE%"=="0" exit /b 0
-
 call :msg_unknown_option
 pause
 goto menu
@@ -185,7 +187,7 @@ echo ==========================================
 echo 1 - English
 echo 2 - Русский
 echo.
-set /p LANG_CHOICE=Language / Язык [1/2, Enter=%LANG%]: 
+set /p "LANG_CHOICE=Language / Язык [1/2, Enter=%LANG%]: "
 if "%LANG_CHOICE%"=="" goto :eof
 if "%LANG_CHOICE%"=="1" set "LANG=EN"
 if "%LANG_CHOICE%"=="2" set "LANG=RU"
@@ -217,7 +219,6 @@ if "%IP%"=="%PRINTER1%" (
     set "P_EAC_OFFSET_Y=%P1_EAC_OFFSET_Y%"
     goto :eof
 )
-
 if "%IP%"=="%PRINTER2%" (
     set "P_LABEL=%P2_LABEL%"
     set "P_X=%P2_X%"
@@ -238,7 +239,6 @@ if "%IP%"=="%PRINTER2%" (
     set "P_EAC_OFFSET_Y=%P2_EAC_OFFSET_Y%"
     goto :eof
 )
-
 call :msg_unknown_ip
 exit /b 1
 
@@ -252,6 +252,7 @@ goto :eof
 (
     echo ==========================================
     echo [RUN] %DATE% %TIME%
+    echo ROOT=%ROOT%
     echo EXE=%EXE%
     echo IP=%IP%
     echo LABEL=%P_LABEL%
@@ -261,14 +262,12 @@ goto :eof
 
 "%EXE%" %ARGS% >> "%LOGFILE%" 2>&1
 set "RC=%ERRORLEVEL%"
-
 type "%LOGFILE%"
-
 if not "%RC%"=="0" call :msg_run_failed
 exit /b %RC%
 
 :one
-if /I "%LANG%"=="RU" (set /p ROWNUM=Строка: ) else (set /p ROWNUM=Row: )
+if /I "%LANG%"=="RU" (set /p "ROWNUM=Строка: ") else (set /p "ROWNUM=Row: ")
 if "%ROWNUM%"=="" set "ROWNUM=0"
 set "LAST_ROW=%ROWNUM%"
 call :save_ini
@@ -296,7 +295,7 @@ pause
 goto menu
 
 :debugone
-if /I "%LANG%"=="RU" (set /p ROWNUM=Строка: ) else (set /p ROWNUM=Row: )
+if /I "%LANG%"=="RU" (set /p "ROWNUM=Строка: ") else (set /p "ROWNUM=Row: ")
 if "%ROWNUM%"=="" set "ROWNUM=0"
 set "LAST_ROW=%ROWNUM%"
 call :save_ini
@@ -308,36 +307,37 @@ pause
 goto menu
 
 :setexcel
-if /I "%LANG%"=="RU" (set /p EXCEL=Новый Excel-файл: ) else (set /p EXCEL=New Excel file: )
+if /I "%LANG%"=="RU" (set /p "EXCEL=Excel-файл относительно папки BAT: ") else (set /p "EXCEL=Excel file relative to BAT folder: ")
 call :save_ini
 goto menu
 
 :setcolumns
 if /I "%LANG%"=="RU" (
-    set /p COLUMN=Колонка Data Matrix: 
-    set /p GTIN_COLUMN=Колонка GTIN: 
-    set /p NAME_COLUMN=Колонка названия: 
+    set /p "COLUMN=Колонка Data Matrix: "
+    set /p "GTIN_COLUMN=Колонка GTIN: "
+    set /p "NAME_COLUMN=Колонка названия: "
 ) else (
-    set /p COLUMN=Barcode column: 
-    set /p GTIN_COLUMN=GTIN column: 
-    set /p NAME_COLUMN=Name column: 
+    set /p "COLUMN=Barcode column: "
+    set /p "GTIN_COLUMN=GTIN column: "
+    set /p "NAME_COLUMN=Name column: "
 )
 call :save_ini
 goto menu
 
 :setprinters
 if /I "%LANG%"=="RU" (
-    set /p PRINTER1=IP принтера 1 [%P1_LABEL%]: 
-    set /p PRINTER2=IP принтера 2 [%P2_LABEL%]: 
+    set /p "PRINTER1=IP принтера 1 [%P1_LABEL%]: "
+    set /p "PRINTER2=IP принтера 2 [%P2_LABEL%]: "
 ) else (
-    set /p PRINTER1=Printer 1 IP [%P1_LABEL%]: 
-    set /p PRINTER2=Printer 2 IP [%P2_LABEL%]: 
+    set /p "PRINTER1=Printer 1 IP [%P1_LABEL%]: "
+    set /p "PRINTER2=Printer 2 IP [%P2_LABEL%]: "
 )
 call :save_ini
 goto menu
 
 :show
 call :select_profile
+echo Root=%ROOT%
 echo Excel=%EXCEL%
 echo Columns=%COLUMN% / %GTIN_COLUMN% / %NAME_COLUMN%
 echo Printer1=%PRINTER1% [%P1_LABEL%]
@@ -358,31 +358,33 @@ goto menu
 :help
 if /I "%LANG%"=="RU" goto help_ru
 echo This menu calls the EXE and prints labels from Excel.
+echo All paths are relative to the folder containing this BAT file.
 echo.
-echo Modes:
-echo   Print ONE  - print selected Excel row.
-echo   Print ALL  - process all rows; blank barcode rows feed one empty label.
-echo   Debug ONE  - show generated data without sending to printer.
+echo Expected layout:
+echo   menu_print_v3.1_en.bat
+echo   menu_print_v3.1.ini
+echo   data.xlsx
+echo   eac.png
+echo   fonts\arial.ttf
+echo   dist\print_datamatrix_zpl_graphics_from_excel_v3.1.exe
 echo.
-echo Printer-specific layout values are stored in:
-echo   %INI%
-echo.
-echo Edit Printer1... keys for 60x30 labels and Printer2... keys for 60x40 labels.
+echo Blank barcode rows feed one empty label.
 pause
 goto menu
 
 :help_ru
 echo Это меню запускает EXE и печатает этикетки из Excel.
+echo Все пути относительны папке, где лежит этот BAT-файл.
 echo.
-echo Режимы:
-echo   Печать одной этикетки - выбранная строка Excel.
-echo   Печать всех строк     - все строки; пустая строка barcode протягивает пустую наклейку.
-echo   Отладка одной строки  - показать данные без отправки на принтер.
+echo Ожидаемая структура:
+echo   menu_print_v3.1_en.bat
+echo   menu_print_v3.1.ini
+echo   data.xlsx
+echo   eac.png
+echo   fonts\arial.ttf
+echo   dist\print_datamatrix_zpl_graphics_from_excel_v3.1.exe
 echo.
-echo Индивидуальные параметры принтеров хранятся в:
-echo   %INI%
-echo.
-echo Ключи Printer1... используются для 60x30, ключи Printer2... для 60x40.
+echo Пустая строка barcode протягивает одну пустую наклейку.
 pause
 goto menu
 
@@ -460,7 +462,7 @@ goto :eof
 
 :save_ini
 > "%INI%" echo ; LABEL PRINTING TOOL v3.1 CONFIGURATION / КОНФИГУРАЦИЯ ПЕЧАТИ ЭТИКЕТОК v3.1
->> "%INI%" echo ; This file is generated by menu_print_v3.1_en.bat / Этот файл создаётся батником menu_print_v3.1_en.bat
+>> "%INI%" echo ; Paths are relative to the folder containing the BAT file / Пути относительны папке, где лежит BAT-файл
 >> "%INI%" echo ; Lines starting with ; are comments / Строки, начинающиеся с ;, являются комментариями
 >> "%INI%" echo.
 >> "%INI%" echo [Settings]
@@ -517,8 +519,6 @@ goto :eof
 >> "%INI%" echo Printer2EacOffsetY=%P2_EAC_OFFSET_Y%
 >> "%INI%" echo.
 >> "%INI%" echo ; Template for future label sizes / Шаблон для будущих размеров наклеек
->> "%INI%" echo ; Copy this block, rename keys, and add support in the BAT if a third printer/profile is needed.
->> "%INI%" echo ; Скопируйте блок, переименуйте ключи и добавьте поддержку в BAT, если нужен третий принтер/профиль.
 >> "%INI%" echo ; PrinterXLabel=custom-size
 >> "%INI%" echo ; PrinterXX=0
 >> "%INI%" echo ; PrinterXY=0
@@ -530,7 +530,7 @@ goto :eof
 >> "%INI%" echo ; PrinterXAi21FontSize=20
 >> "%INI%" echo ; PrinterXLineGap=4
 >> "%INI%" echo ; PrinterXNameMaxLines=2
->> "%INI%" echo ; PrinterXFontPath=C:\Windows\Fonts\arial.ttf
+>> "%INI%" echo ; PrinterXFontPath=fonts\arial.ttf
 >> "%INI%" echo ; PrinterXEacLogoPath=eac.png
 >> "%INI%" echo ; PrinterXEacHeightPx=64
 >> "%INI%" echo ; PrinterXEacGapPx=16
