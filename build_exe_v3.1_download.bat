@@ -10,6 +10,6 @@ python -m PyInstaller ^
   --onefile ^
   --name print_datamatrix_zpl_graphics_from_excel_v3.1 ^
   --add-data "C:\labels\eac.png;." ^
-  print_datamatrix_zpl_graphics_from_excel_v3.1_download.py
+  print_datamatrix_zpl_graphics_from_excel_v3.1.py
 
 pause
