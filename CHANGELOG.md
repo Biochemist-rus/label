@@ -2,7 +2,7 @@
 
 ## Release 3.5
 
-Release 3.5 marks the current stable state after the 3.1 label-printing tool was extended and normalized.
+Release 3.5 is the current stable baseline for the label-printing tool.
 
 ### Added
 
@@ -17,6 +17,8 @@ Release 3.5 marks the current stable state after the 3.1 label-printing tool was
 - Relative EAC logo path: `eac.png`.
 - Relative build script paths for PyInstaller resources.
 - Logging of executed print commands and EXE output into the `logs` folder.
+- Normalized release 3.5 file names.
+- Legacy marker for release 3.1 files.
 
 ### Preserved from 3.1
 
@@ -31,17 +33,20 @@ Release 3.5 marks the current stable state after the 3.1 label-printing tool was
 
 ```text
 project-folder/
-  build_exe_v3.1_download.bat
-  menu_print_v3.1_en.bat
-  menu_print_v3.1.ini
-  print_datamatrix_zpl_graphics_from_excel_v3.1.py
+  build_exe_v3.5.bat
+  menu_print_v3.5.bat
+  menu_print_v3.5.ini
+  print_datamatrix_zpl_graphics_from_excel_v3.5.py
   data.xlsx
   eac.png
   fonts/
     arial.ttf
   dist/
-    print_datamatrix_zpl_graphics_from_excel_v3.1.exe
+    print_datamatrix_zpl_graphics_from_excel_v3.5.exe
   logs/
+  legacy/
+    v3.1/
+      README.md
 ```
 
 ## Release policy
