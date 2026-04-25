@@ -1,0 +1,37 @@
+
+==========================================
+[RUN] one row=53 ip=192.168.14.105 time=20.04.2026 12:02:51,75
+COMMAND: C:\labels\dist\print_datamatrix_zpl_graphics_from_excel_v3.1.exe --excel "C:\labels\data.xlsx" --column barcode --gtin-column gtin --name-column name --ip 192.168.14.105 --x 15 --y 20 --module-size 3 --text-offset-y 110 --text-width-px 450 --gtin-font-size 22 --name-font-size 24 --ai21-font-size 20 --line-gap 4 --name-max-lines 2 --font-path "C:\Windows\Fonts\arial.ttf" --eac-logo-path eac.png --eac-height-px 64 --eac-gap-px 16 --eac-offset-x -1 --eac-offset-y 0 --row 53
+[DEBUG] Excel row: 55
+[DEBUG] repr(barcode_value):
+'0104660695360207215xBOjJk;czLit!h>U_PM_x001D_91EE12_x001D_92lJmuQKLNd5nzUaRQGHe6rNY+xpfwgFoRNxYpc3QRVLM='
+
+[DEBUG] payload length: 92
+[DEBUG] payload hex:
+3031303436363036393533363032303732313578424f6a4a6b3b637a4c697421683e555f504d1d3931454531321d39326c4a6d75514b4c4e64356e7a5561525147486536724e592b7870667767466f524e78597063335152564c4d3d
+
+[DEBUG] GS count: 2
+[DEBUG] payload visualized:
+b'0104660695360207215xBOjJk;czLit!h>U_PM<GS>91EE12<GS>92lJmuQKLNd5nzUaRQGHe6rNY+xpfwgFoRNxYpc3QRVLM='
+
+[DEBUG] GTIN lines:
+  [1] 04660695360207
+
+[DEBUG] NAME lines:
+  [1] У/ф лампа 254 нм для ACM-модуля
+  [2] систем очистки воды, 265011001
+
+[DEBUG] AI21 lines:
+  [1] (21) 5xBOjJk;czLit
+
+[DEBUG] text image size: (450, 98)
+[DEBUG] eac image size: (115, 64)
+[DEBUG] eac offset: 88 0
+[DEBUG] text offset y: 110
+[DEBUG] ZPL length: 13294
+[DEBUG] First 300 bytes of ZPL:
+b'^XA\r\n^FO15,20\r\n^BXN,3,200\r\n^FD0104660695360207215xBOjJk;czLit!h>U_PM\x1d91EE12\x1d92lJmuQKLNd5nzUaRQGHe6rNY+xpfwgFoRNxYpc3QRVLM=^FS\r\n^FO103,20\r\n^GFA,960,960,15,00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000'
+
+[INFO] Отправка по TCP: 192.168.14.105:9100
+[OK] Команда отправлена на принтер
+

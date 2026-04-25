@@ -1,0 +1,8 @@
+
+==========================================
+[RUN] one row=6 ip=192.168.14.105 time=20.04.2026 12:49:57,39
+[INFO] Excel row 8: blank separator row detected
+[INFO] Sending one blank label feed
+[INFO] Sending blank label feed to 192.168.14.105:9100
+[OK] Blank label feed sent
+

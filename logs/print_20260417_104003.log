@@ -1,0 +1,29 @@
+
+==========================================
+[RUN] one row=5 ip=192.168.14.105 time=17.04.2026 10:40:33,54
+usage: print_datamatrix_zpl_graphics_from_excel_v3.1.exe [-h] --excel EXCEL
+                                                         [--sheet SHEET]
+                                                         --column COLUMN
+                                                         --gtin-column GTIN_COLUMN
+                                                         --name-column NAME_COLUMN
+                                                         [--row ROW] [--all]
+                                                         --ip IP [--port PORT]
+                                                         [--x X] [--y Y]
+                                                         [--module-size MODULE_SIZE]
+                                                         [--quality QUALITY]
+                                                         [--orientation ORIENTATION]
+                                                         [--text-offset-y TEXT_OFFSET_Y]
+                                                         [--text-width-px TEXT_WIDTH_PX]
+                                                         [--text-padding TEXT_PADDING]
+                                                         [--gtin-font-size GTIN_FONT_SIZE]
+                                                         [--name-font-size NAME_FONT_SIZE]
+                                                         [--line-gap LINE_GAP]
+                                                         [--name-max-lines NAME_MAX_LINES]
+                                                         [--font-path FONT_PATH]
+                                                         [--eac-logo-path EAC_LOGO_PATH]
+                                                         [--eac-height-px EAC_HEIGHT_PX]
+                                                         [--eac-gap-px EAC_GAP_PX]
+                                                         [--save-zpl SAVE_ZPL]
+                                                         [--save-text-image SAVE_TEXT_IMAGE]
+                                                         [--no-send]
+print_datamatrix_zpl_graphics_from_excel_v3.1.exe: error: unrecognized arguments: --ai21-font-size 22 --eac-offset-x -1 --eac-offset-y 0
