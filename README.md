@@ -37,6 +37,18 @@ label/
 
 All runtime paths in the menu are relative to the folder containing the BAT file.
 
+## File roles
+
+- `menu_print_v3.x.bat` is the main launcher for printing labels. It opens the interactive menu, lets the user select a printer and print mode, and runs the compiled EXE with the selected settings.
+- `menu_print_v3.x.ini` stores precision print settings. It is mainly used to adjust layout parameters for label size, printer model, print position, font sizes, EAC logo position, and other printer-specific differences.
+- `build_exe_v3.x.bat` is the binary build script. It is needed when the Python source code has changed and a new EXE must be compiled with PyInstaller.
+- `print_datamatrix_zpl_graphics_from_excel_v3.x.py` is the Python source code used to generate ZPL and send it to the printer.
+- `data.xlsx` is a template Excel file with label data.
+- `eac.png` is the EAC logo image used on the label.
+- `fonts/` contains fonts used for rendering label text.
+- `dist/` contains the compiled EXE after build.
+- `logs/` contains print/debug logs created by the menu launcher.
+
 ## Active release files
 
 - `print_datamatrix_zpl_graphics_from_excel_v3.5.py`
