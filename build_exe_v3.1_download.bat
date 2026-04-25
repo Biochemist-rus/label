@@ -1,5 +1,8 @@
 @echo off
-cd /d C:\labels
+chcp 65001 >nul
+setlocal
+
+cd /d "%~dp0"
 
 python -m pip install --upgrade pip
 python -m pip install pyinstaller pillow openpyxl
@@ -9,7 +12,8 @@ python -m PyInstaller ^
   --clean ^
   --onefile ^
   --name print_datamatrix_zpl_graphics_from_excel_v3.1 ^
-  --add-data "C:\labels\eac.png;." ^
+  --add-data "eac.png;." ^
+  --add-data "fonts;fonts" ^
   print_datamatrix_zpl_graphics_from_excel_v3.1.py
 
 pause
