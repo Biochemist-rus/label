@@ -1,8 +1,45 @@
 # Changelog
 
+## Release 3.6
+
+Release 3.6 is the current stable baseline for the label-printing tool.
+
+### Changed
+
+- Bumped active release files from 3.5 to 3.6.
+- Added `menu_print_v3.6.ini`.
+- Added `menu_print_v3.6.bat`.
+- Added `build_exe_v3.6.bat`.
+- Added `print_datamatrix_zpl_graphics_from_excel_v3.6.py`.
+- For Printer 1 / 60x30 mm labels, changed the default EAC logo horizontal offset:
+
+```ini
+Printer1EacOffsetX=95
+```
+
+### Expected project layout
+
+```text
+project-folder/
+  build_exe_v3.6.bat
+  menu_print_v3.6.bat
+  menu_print_v3.6.ini
+  print_datamatrix_zpl_graphics_from_excel_v3.6.py
+  data.xlsx
+  eac.png
+  fonts/
+    arial.ttf
+  dist/
+    print_datamatrix_zpl_graphics_from_excel_v3.6.exe
+  logs/
+  legacy/
+    v3.1/
+      README.md
+```
+
 ## Release 3.5
 
-Release 3.5 is the current stable baseline for the label-printing tool.
+Release 3.5 was the previous stable baseline for the label-printing tool.
 
 ### Added
 
@@ -28,26 +65,6 @@ Release 3.5 is the current stable baseline for the label-printing tool.
 - AI(21) extraction and printing.
 - Blank Excel barcode rows feeding one empty label via `~PH`.
 - Support for blank separator rows both in `--all` mode and for direct `--row` printing.
-
-### Expected project layout
-
-```text
-project-folder/
-  build_exe_v3.5.bat
-  menu_print_v3.5.bat
-  menu_print_v3.5.ini
-  print_datamatrix_zpl_graphics_from_excel_v3.5.py
-  data.xlsx
-  eac.png
-  fonts/
-    arial.ttf
-  dist/
-    print_datamatrix_zpl_graphics_from_excel_v3.5.exe
-  logs/
-  legacy/
-    v3.1/
-      README.md
-```
 
 ## Release policy
 
