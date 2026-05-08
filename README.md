@@ -2,7 +2,7 @@
 
 Chestniy Znak label-printing tool.
 
-Current baseline release: **3.5**.
+Current baseline release: **3.6**.
 
 ## What this tool does
 
@@ -13,22 +13,22 @@ Current baseline release: **3.5**.
   - 60x30 mm;
   - 60x40 mm.
 - Supports blank separator rows: an empty barcode cell feeds one blank label via `~PH`.
-- Provides a bilingual BAT menu: English / Russian.
+- Provides a BAT menu launcher.
 
 ## Expected local layout
 
 ```text
 label/
-  menu_print_v3.5.bat
-  menu_print_v3.5.ini
-  build_exe_v3.5.bat
-  print_datamatrix_zpl_graphics_from_excel_v3.5.py
+  menu_print_v3.6.bat
+  menu_print_v3.6.ini
+  build_exe_v3.6.bat
+  print_datamatrix_zpl_graphics_from_excel_v3.6.py
   data.xlsx
   eac.png
   fonts/
     arial.ttf
   dist/
-    print_datamatrix_zpl_graphics_from_excel_v3.5.exe
+    print_datamatrix_zpl_graphics_from_excel_v3.6.exe
   logs/
   legacy/
     v3.1/
@@ -51,10 +51,18 @@ All runtime paths in the menu are relative to the folder containing the BAT file
 
 ## Active release files
 
-- `print_datamatrix_zpl_graphics_from_excel_v3.5.py`
-- `build_exe_v3.5.bat`
-- `menu_print_v3.5.bat`
-- `menu_print_v3.5.ini`
+- `print_datamatrix_zpl_graphics_from_excel_v3.6.py`
+- `build_exe_v3.6.bat`
+- `menu_print_v3.6.bat`
+- `menu_print_v3.6.ini`
+
+## Release 3.6 note
+
+For 60x30 mm labels, the default EAC logo horizontal offset is now:
+
+```ini
+Printer1EacOffsetX=95
+```
 
 ## Legacy
 
@@ -64,6 +72,7 @@ Old release 3.1 files were removed from the active project root to avoid confusi
 
 See:
 
+- `RELEASE_3.6.md`
 - `RELEASE_3.5.md`
 - `CHANGELOG.md`
 
