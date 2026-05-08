@@ -1,12 +1,12 @@
-name: Package Ready-to-Use ZIP
+﻿name: Package Ready-to-Use ZIP
 
 on:
   workflow_dispatch:
     inputs:
       release_version:
-        description: 'Release version without leading v, for example: 3.5'
+        description: 'Release version without leading v, for example: 3.6'
         required: true
-        default: '3.5'
+        default: '3.6'
 
 env:
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
@@ -29,34 +29,35 @@ jobs:
         run: python -m pip install --upgrade pip pyinstaller pillow openpyxl
 
       - name: Check Python syntax
-        run: python -m py_compile print_datamatrix_zpl_graphics_from_excel_v3.5.py
+        run: python -m py_compile print_datamatrix_zpl_graphics_from_excel_v3.6.py
 
       - name: Check CLI help
-        run: python print_datamatrix_zpl_graphics_from_excel_v3.5.py --help
+        run: python print_datamatrix_zpl_graphics_from_excel_v3.6.py --help
 
       - name: Build Windows EXE
-        run: python -m PyInstaller --noconfirm --clean --onefile --name print_datamatrix_zpl_graphics_from_excel_v3.5 --add-data "eac.png;." --add-data "fonts;fonts" print_datamatrix_zpl_graphics_from_excel_v3.5.py
+        run: python -m PyInstaller --noconfirm --clean --onefile --name print_datamatrix_zpl_graphics_from_excel_v3.6 --add-data "eac.png;." --add-data "fonts;fonts" print_datamatrix_zpl_graphics_from_excel_v3.6.py
 
       - name: Prepare ready-to-use folder
         shell: powershell
         run: |
           $ErrorActionPreference = 'Stop'
-          $root = 'label-tool-v3.5'
+          $root = 'label-tool-v3.6'
           if (Test-Path $root) { Remove-Item $root -Recurse -Force }
           New-Item -ItemType Directory -Force -Path $root | Out-Null
           New-Item -ItemType Directory -Force -Path "$root\dist" | Out-Null
           New-Item -ItemType Directory -Force -Path "$root\fonts" | Out-Null
-          Copy-Item 'menu_print_v3.5.bat' "$root\"
-          Copy-Item 'menu_print_v3.5.ini' "$root\"
+          Copy-Item 'menu_print_v3.6.bat' "$root\"
+          Copy-Item 'menu_print_v3.6.ini' "$root\"
           Copy-Item 'data.xlsx' "$root\"
           Copy-Item 'eac.png' "$root\"
           Copy-Item 'fonts\*' "$root\fonts\" -Recurse
-          Copy-Item 'dist\print_datamatrix_zpl_graphics_from_excel_v3.5.exe' "$root\dist\"
-          Compress-Archive -Path $root -DestinationPath 'label-tool-v3.5-ready-to-use.zip' -Force
+          Copy-Item 'dist\print_datamatrix_zpl_graphics_from_excel_v3.6.exe' "$root\dist\"
+          Compress-Archive -Path $root -DestinationPath 'label-tool-v3.6-ready-to-use.zip' -Force
 
       - name: Upload ready-to-use ZIP
         uses: actions/upload-artifact@v4
         with:
-          name: label-tool-v3.5-ready-to-use
-          path: label-tool-v3.5-ready-to-use.zip
+          name: label-tool-v3.6-ready-to-use
+          path: label-tool-v3.6-ready-to-use.zip
           if-no-files-found: error
+
